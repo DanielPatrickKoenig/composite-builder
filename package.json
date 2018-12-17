@@ -12,6 +12,7 @@
   "dependencies": {
     "bootstrap": "^4.1.1",
     "bootstrap-vue": "^2.0.0-rc.9",
+    "three": "^0.99.0",
     "vue": "^2.5.11"
   },
   "browserslist": [
