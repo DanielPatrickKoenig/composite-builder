@@ -1,7 +1,7 @@
 <template>
-  <svg class="single-axis">
-    <axiselement v-for="(o, i) in objects" :key="'group'+i.toString()" :axis='axis' :object="o" :offset="offset"></axiselement>
-  </svg>
+  <div class="single-axis">
+    <axiselement v-for="(o, i) in objects" :key="'group'+i.toString()" :axis='axis' :object="o" :offset="offset" :scale="scale"></axiselement>
+  </div>
 </template>
 <script>
 // import {AxisTypes} from './AxisTypes.js'
@@ -10,10 +10,11 @@ export default {
   components: {
     axiselement: SingleAxisWireFrameElement
   },
-  props: ['objects', 'axis'],
+  props: ['objects', 'axis', 'scale'],
   data () {
     return {
-      offset: {x: 200, y: 200}
+      offset: {x: 200, y: 200},
+      svgID: 'svgElement_' + Math.random().toString().split('.').join('') + Math.random().toString().split('.').join('') + Math.random().toString().split('.').join('')
     }
   },
   mounted: function () {
@@ -23,7 +24,8 @@ export default {
 </script>
 <style lang="scss" scoped>
 svg.single-axis{
-  width:400px;
-  height:400px;
+  width:100%;
+  height:100%;
+  position:absolute;
 }
 </style>
