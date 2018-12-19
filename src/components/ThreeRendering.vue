@@ -11,7 +11,7 @@ import {ObjectTypes} from './ObjectTypes.js'
 import {AxisTypes} from './AxisTypes.js'
 import SingleAxisWireFrame from './SingleAxisWireFrame.vue'
 export default {
-  props: ['objects', 'perspective', 'axis'],
+  props: ['objects', 'perspective', 'axis', 'signature'],
   components: {
     wireframe: SingleAxisWireFrame
   },
@@ -26,7 +26,18 @@ export default {
       axisData: {
         axis: this.axis,
         scale: 8
-      }
+      },
+      sig: this.signature,
+      meshes: []
+    }
+  },
+  watch: {
+    signature: function () {
+      var self = this
+      console.log('sig change')
+      self.$data.sig = self.signature
+      self.updateObjects()
+      self.$data.renderer.render(self.$data.scene, self.$data.camera)
     }
   },
   methods: {
@@ -46,6 +57,7 @@ export default {
         var wireframe = {}
         var line = {}
         var mesh = {}
+        var phongMat = new THREE.MeshPhongMaterial({color: 0x0000cc, specular: 0xffffff})
         switch (self.objects[i].type) {
           case ObjectTypes.PLANE: {
             geometry = new THREE.PlaneBufferGeometry(self.objects[i].size.width, self.objects[i].size.height, 32)
@@ -59,7 +71,7 @@ export default {
               scene.add(line)
               obj = line
             } else {
-              mesh = new THREE.Mesh(geometry, material)
+              mesh = new THREE.Mesh(geometry, phongMat)
               scene.add(mesh)
               obj = mesh
             }
@@ -77,7 +89,7 @@ export default {
               scene.add(line)
               obj = line
             } else {
-              mesh = new THREE.Mesh(geometry, material)
+              mesh = new THREE.Mesh(geometry, phongMat)
               scene.add(mesh)
               obj = mesh
             }
@@ -95,7 +107,7 @@ export default {
               scene.add(line)
               obj = line
             } else {
-              mesh = new THREE.Mesh(geometry, material)
+              mesh = new THREE.Mesh(geometry, phongMat)
               scene.add(mesh)
               obj = mesh
             }
@@ -103,6 +115,7 @@ export default {
           }
         }
         if (obj !== {}) {
+          self.$data.meshes.push(obj)
           obj.position.x = self.objects[i].position.x
           obj.position.y = self.objects[i].position.y
           obj.position.z = self.objects[i].position.z
@@ -111,6 +124,18 @@ export default {
           obj.rotation.z = self.objects[i].rotation.z * (Math.PI / 180)
           obj.name = 'yo'
         }
+      }
+    },
+    updateObjects: function () {
+      var self = this
+      for (var i = 0; i < self.objects.length; i++) {
+        self.$data.meshes[i].position.x = self.objects[i].position.x
+        self.$data.meshes[i].position.y = self.objects[i].position.y
+        self.$data.meshes[i].position.z = self.objects[i].position.z
+        // self.$data.meshes[i].rotation.x = self.objects[i].rotation.x * (Math.PI / 180)
+        // self.$data.meshes[i].rotation.y = self.objects[i].rotation.y * (Math.PI / 180)
+        // self.$data.meshes[i].rotation.z = self.objects[i].rotation.z * (Math.PI / 180)
+        // obj.name = 'yo'
       }
     }
   },
@@ -155,6 +180,19 @@ export default {
           break
         }
       }
+    } else {
+      var light0 = new THREE.AmbientLight(0x202020)
+      scene.add(light0)
+      var light1 = new THREE.PointLight(0xffffff, 0.5)
+      light1.position.set(-12, 15, 10)
+      scene.add(light1)
+      var light2 = new THREE.DirectionalLight(0xffffff, 0.3)
+      light2.position.set(0, 100, 10)
+      scene.add(light2)
+      var light1helper = new THREE.PointLightHelper(light1, 0.2)
+      scene.add(light1helper)
+      var light2helper = new THREE.DirectionalLightHelper(light2, 1)
+      scene.add(light2helper)
     }
     self.$data.scene = scene
     self.$data.camera = camera

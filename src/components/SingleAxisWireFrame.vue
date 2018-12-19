@@ -1,6 +1,6 @@
 <template>
   <div class="single-axis">
-    <axiselement v-for="(o, i) in objects" :key="'group'+i.toString()" :axis='axis' :object="o" :offset="offset" :scale="scale"></axiselement>
+    <axiselement v-for="(o, i) in objects" :key="'group'+i.toString()" :axis='axis' :object="o" :offset="offset" :scale="scale" :index="i"></axiselement>
   </div>
 </template>
 <script>
