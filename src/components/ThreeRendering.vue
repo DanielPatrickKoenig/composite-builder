@@ -60,7 +60,7 @@ export default {
         var phongMat = new THREE.MeshPhongMaterial({color: 0x0000cc, specular: 0xffffff})
         switch (self.objects[i].type) {
           case ObjectTypes.PLANE: {
-            geometry = new THREE.PlaneBufferGeometry(self.objects[i].size.width, self.objects[i].size.height, 32)
+            geometry = new THREE.PlaneBufferGeometry(1, 1, 32)
             material = new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color: 0xcc0000, transparent: true})
             if (self.isOrthographic) {
               wireframe = new THREE.EdgesGeometry(geometry)
@@ -78,7 +78,7 @@ export default {
             break
           }
           case ObjectTypes.BOX: {
-            geometry = new THREE.BoxBufferGeometry(self.objects[i].size.width, self.objects[i].size.height, self.objects[i].size.depth, 32, 32, 32)
+            geometry = new THREE.BoxBufferGeometry(1, 1, 1, 32, 32, 32)
             material = new THREE.MeshBasicMaterial({color: 0xcc0000})
             if (self.isOrthographic) {
               wireframe = new THREE.EdgesGeometry(geometry)
@@ -96,7 +96,7 @@ export default {
             break
           }
           case ObjectTypes.SPHERE: {
-            geometry = new THREE.SphereBufferGeometry(self.objects[i].size.radius)
+            geometry = new THREE.SphereBufferGeometry(1)
             material = new THREE.MeshBasicMaterial({color: 0xcc0000})
             if (self.isOrthographic) {
               wireframe = new THREE.EdgesGeometry(geometry)
@@ -117,11 +117,14 @@ export default {
         if (obj !== {}) {
           self.$data.meshes.push(obj)
           obj.position.x = self.objects[i].position.x
-          obj.position.y = self.objects[i].position.y
+          obj.position.y = self.objects[i].position.y * self.yFactor
           obj.position.z = self.objects[i].position.z
           obj.rotation.x = self.objects[i].rotation.x * (Math.PI / 180)
           obj.rotation.y = self.objects[i].rotation.y * (Math.PI / 180)
           obj.rotation.z = self.objects[i].rotation.z * (Math.PI / 180)
+          obj.scale.x = self.objects[i].scale.x
+          obj.scale.y = self.objects[i].scale.y
+          obj.scale.z = self.objects[i].scale.z
           obj.name = 'yo'
         }
       }
@@ -130,11 +133,14 @@ export default {
       var self = this
       for (var i = 0; i < self.objects.length; i++) {
         self.$data.meshes[i].position.x = self.objects[i].position.x
-        self.$data.meshes[i].position.y = self.objects[i].position.y
+        self.$data.meshes[i].position.y = self.objects[i].position.y * self.yFactor
         self.$data.meshes[i].position.z = self.objects[i].position.z
-        // self.$data.meshes[i].rotation.x = self.objects[i].rotation.x * (Math.PI / 180)
-        // self.$data.meshes[i].rotation.y = self.objects[i].rotation.y * (Math.PI / 180)
-        // self.$data.meshes[i].rotation.z = self.objects[i].rotation.z * (Math.PI / 180)
+        self.$data.meshes[i].rotation.x = self.objects[i].rotation.x * (Math.PI / 180)
+        self.$data.meshes[i].rotation.y = self.objects[i].rotation.y * (Math.PI / 180)
+        self.$data.meshes[i].rotation.z = self.objects[i].rotation.z * (Math.PI / 180)
+        self.$data.meshes[i].scale.x = self.objects[i].scale.x
+        self.$data.meshes[i].scale.y = self.objects[i].scale.y
+        self.$data.meshes[i].scale.z = self.objects[i].scale.z
         // obj.name = 'yo'
       }
     }
@@ -143,6 +149,10 @@ export default {
     isOrthographic: function () {
       var self = this
       return self.perspective === 0
+    },
+    yFactor: function () {
+      var self = this
+      return self.isOrthographic ? -1 : 1
     }
   },
   mounted: function () {
