@@ -153,6 +153,19 @@ export default {
       }
       self.updateViewports()
     })
+    EventBus.$on('wireframe-scale-x-element', (n) => {
+      console.log(n)
+      self.$data.objectManifest[n.index].scale.x = n.s
+      self.updateViewports()
+    })
+    EventBus.$on('wireframe-scale-y-element', (n) => {
+      self.$data.objectManifest[n.index].scale.y = n.s
+      self.updateViewports()
+    })
+    EventBus.$on('wireframe-scale-z-element', (n) => {
+      self.$data.objectManifest[n.index].scale.z = n.s
+      self.updateViewports()
+    })
     EventBus.$on('editor-value-change', (n) => {
       self.updateViewports()
     })
