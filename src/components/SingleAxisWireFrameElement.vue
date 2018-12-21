@@ -4,6 +4,10 @@
     <div v-if="dragging" v-on:mousemove="onDragMove" v-on:mouseup="onDragUp" class="element-edit-layer"></div>
     <a v-on:mousedown="onRotateDown" :style="'left:'+orbit(true).toString()+'px;top:'+orbit().toString()+'px;width:'+moverSize.width.toString()+'px;height:'+moverSize.height.toString()+'px;margin-left:'+(moverSize.width/-2).toString()+'px;margin-top:'+(moverSize.height/-2).toString()+'px;'"></a>
     <div v-if="rotating" v-on:mousemove="onRotateMove" v-on:mouseup="onRotateUp" class="element-edit-layer"></div>
+    <a v-on:mousedown="onScaleADown" :style="'left:'+((object.position[proxies.x]*scale)+(scaleBase*object.scale[proxies.x])).toString()+'px;top:'+(object.position[proxies.y]*scale*(yFactor)).toString()+'px;width:'+moverSize.width.toString()+'px;height:'+moverSize.height.toString()+'px;margin-left:'+(moverSize.width/-2).toString()+'px;margin-top:'+(moverSize.height/-2).toString()+'px;'"></a>
+    <div v-if="scalingA" v-on:mousemove="onScaleAMove" v-on:mouseup="onScaleAUp" class="element-edit-layer"></div>
+    <a v-on:mousedown="onScaleBDown" :style="'left:'+(object.position[proxies.x]*scale).toString()+'px;top:'+((object.position[proxies.y]*scale*yFactor)+(scaleBase*object.scale[proxies.y])).toString()+'px;width:'+moverSize.width.toString()+'px;height:'+moverSize.height.toString()+'px;margin-left:'+(moverSize.width/-2).toString()+'px;margin-top:'+(moverSize.height/-2).toString()+'px;'"></a>
+    <div v-if="scalingB" v-on:mousemove="onScaleBMove" v-on:mouseup="onScaleBUp" class="element-edit-layer"></div>
   </div>
 </template>
 <script>
@@ -20,8 +24,13 @@ export default {
       moverSize: {width: 12, height: 12},
       yFactor: this.axis === AxisTypes.Y ? 1 : -1,
       yBuffer: this.axis === AxisTypes.Y ? 0 : 180,
+      scaleDiff: {x: 0, y: 0},
+      scaleBase: 20,
+      rotationRadius: 40,
       dragging: false,
-      rotating: false
+      rotating: false,
+      scalingA: false,
+      scalingB: false
     }
   },
   methods: {
@@ -62,9 +71,45 @@ export default {
       var self = this
       self.$data.rotating = false
     },
+    onScaleADown: function (e) {
+      var self = this
+      self.$data.scalingA = true
+    },
+    onScaleAMove: function (e) {
+      var self = this
+      // console.log(((e.pageX - document.getElementById(self.$data.containerID).getBoundingClientRect().left) - (self.object.position[self.$data.proxies.x] * self.scale)) / self.$data.scaleBase)
+      EventBus.$emit('wireframe-scale-' + self.$data.proxies.x + '-element', {
+        axis: self.axis,
+        index: self.index,
+        s: ((e.pageX - document.getElementById(self.$data.containerID).getBoundingClientRect().left) - (self.object.position[self.$data.proxies.x] * self.scale)) / self.$data.scaleBase,
+        scale: self.scale
+      })
+    },
+    onScaleAUp: function (e) {
+      var self = this
+      self.$data.scalingA = false
+    },
+    onScaleBDown: function (e) {
+      var self = this
+      self.$data.scalingB = true
+    },
+    onScaleBMove: function (e) {
+      var self = this
+      // console.log(((e.pageX - document.getElementById(self.$data.containerID).getBoundingClientRect().left) - (self.object.position[self.$data.proxies.x] * self.scale)) / self.$data.scaleBase)
+      EventBus.$emit('wireframe-scale-' + self.$data.proxies.y + '-element', {
+        axis: self.axis,
+        index: self.index,
+        s: ((e.pageY - document.getElementById(self.$data.containerID).getBoundingClientRect().top) - (self.object.position[self.$data.proxies.y] * self.scale * self.$data.yFactor)) / self.$data.scaleBase,
+        scale: self.scale
+      })
+    },
+    onScaleBUp: function (e) {
+      var self = this
+      self.$data.scalingB = false
+    },
     orbit: function (isX) {
       var self = this
-      var rotatorDist = 30
+      var rotatorDist = self.$data.rotationRadius
       var val = 0
       if (isX) {
         val = getOrbit(self.object.position[self.$data.proxies.x] * self.scale, rotatorDist, self.object.rotation[self.$data.proxies.r], 'cos')
