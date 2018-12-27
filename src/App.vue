@@ -17,10 +17,25 @@
         <threerender class="z-view" v-if="shouldRender" :objects="objectManifest" :perspective='0' :axis="AxisTypes.Z" :signature="signature"></threerender>
       </div>
     </div>
+    <div class="editor-top-nav" v-on:click="tempData.active = true"><button>Add</button><button>Save</button></div>
+    <div v-if="tempData.active" class="add-object-window">
+      <div>
+        <select v-model="tempData.objId" v-on:change="typeSelectorChange">
+          <option :value="-1">Select an object type</option>
+          <option v-for="(o, k, i) in ObjectTypes" :key="i.toString()+'-'+k.toString()" :value=o.id>{{o.label}}</option>
+
+        </select>
+        <div v-if="tempData.objId >= 0 && tempData.objData != {}">
+          <editor :object="tempData.objData"></editor>
+          <button v-on:click="addObject">Add {{tempData.objData.type.label}}</button>
+          <button v-on:click="cancelAdd">Cancel</button>
+        </div>
+      </div>
+    </div>
     <layers :layers="objectManifest" :z="2000" class="object-listing">
       <div v-for="(o, i) in objectManifest" :key="'objectlayer'+i.toString" :slot="'slot'+i.toString()">
         <label>
-          {{getTypeLabel(o.type)}}
+          {{o.type.label}}
         </label>
         <editor :object="o"></editor>
       </div>
@@ -47,9 +62,14 @@ export default {
       msg: 'Welcome to Your Vue.js App',
       ObjectTypes: ObjectTypes,
       AxisTypes: AxisTypes,
+      tempData: {
+        active: false,
+        objId: -1,
+        objData: {}
+      },
       objectManifest: [
-        {type: ObjectTypes.PLANE, position: {x: 2, y: 5, z: -26}, rotation: {x: 0, y: 22, z: 0}, scale: {x: 6, y: 5, z: 1}},
-        {type: ObjectTypes.PLANE, position: {x: 10, y: -10, z: -16}, rotation: {x: 0, y: -50, z: 0}, scale: {x: 4, y: 4, z: 1}},
+        {type: ObjectTypes.CYLINDER, position: {x: 2, y: 5, z: -26}, rotation: {x: 0, y: 22, z: 0}, scale: {x: 6, y: 5, z: 1}, ratio: 0.3},
+        {type: ObjectTypes.CONE, position: {x: 10, y: -10, z: -16}, rotation: {x: 0, y: -50, z: 0}, scale: {x: 4, y: 4, z: 1}},
         {type: ObjectTypes.BOX, position: {x: -1, y: 0, z: -11}, rotation: {x: 0, y: -40, z: 0}, scale: {x: 4, y: 3, z: 2}},
         {type: ObjectTypes.SPHERE, position: {x: 3, y: 2, z: -11}, rotation: {x: 0, y: -40, z: 0}, scale: {x: 4, y: 3, z: 2}}
       ],
@@ -65,6 +85,36 @@ export default {
     }
   },
   methods: {
+    addObject: function (e) {
+      var self = this
+      self.$data.objectManifest.push(JSON.parse(JSON.stringify(self.$data.tempData.objData)))
+      self.$data.tempData.objData = {}
+      self.$data.tempData.objId = -1
+      self.$data.tempData.active = false
+      self.rerenderViewports()
+      console.log(self.$data.objectManifest)
+    },
+    cancelAdd: function (e) {
+      var self = this
+      self.$data.tempData.objData = {}
+      self.$data.tempData.objId = -1
+      self.$data.tempData.active = false
+    },
+    typeSelectorChange: function (e) {
+      var self = this
+      console.log('############### selected ##################')
+      if (self.$data.tempData.objId >= 0) {
+        var selectedObjectType = {}
+        for (var o in ObjectTypes) {
+          if (ObjectTypes[o].id === self.$data.tempData.objId) {
+            selectedObjectType = JSON.parse(JSON.stringify(ObjectTypes[o])).template
+            selectedObjectType.type = ObjectTypes[o]
+          }
+        }
+        console.log(selectedObjectType)
+        self.$data.tempData.objData = selectedObjectType
+      }
+    },
     getQuatStyle: function (isLeft, isTop) {
       var self = this
       var left = isLeft ? 0 : self.$data.centers.x
@@ -88,22 +138,7 @@ export default {
       }
     },
     getTypeLabel: function (t) {
-      var labelTxt = ''
-      switch (t) {
-        case ObjectTypes.PLANE: {
-          labelTxt = 'Plane'
-          break
-        }
-        case ObjectTypes.BOX: {
-          labelTxt = 'Cube'
-          break
-        }
-        case ObjectTypes.SPHERE: {
-          labelTxt = 'Sphere'
-          break
-        }
-      }
-      return labelTxt
+      return t.label
     }
   },
   mounted: function () {
@@ -168,6 +203,9 @@ export default {
     })
     EventBus.$on('editor-value-change', (n) => {
       self.updateViewports()
+      if (n) {
+        self.rerenderViewports()
+      }
     })
   }
 }
@@ -194,6 +232,32 @@ div.viewports{
   overflow-x: hidden;
   overflow-y: auto;
   padding: 0 !important;
+  margin-top:40px !important;
+}
+div.editor-top-nav{
+  height: 40px;
+  width:250px;
+  position: fixed;
+  top: 0;
+  right: 0;
+  > button{
+    width:50%;
+  }
+}
+div.add-object-window{
+  position:fixed;
+  z-index: 2001;
+  left: 0;
+  top:0;
+  bottom: 0;
+  right:0;
+  background-color: rgba(0,0,0,.85);
+  > div{
+    background-color: rgba(255,255,255,.9);
+    width: 300px;
+    padding: 6px;
+    margin:50px auto;
+  }
 }
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;

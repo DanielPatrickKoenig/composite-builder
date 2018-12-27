@@ -58,8 +58,8 @@ export default {
         var line = {}
         var mesh = {}
         var phongMat = new THREE.MeshPhongMaterial({color: 0x0000cc, specular: 0xffffff})
-        switch (self.objects[i].type) {
-          case ObjectTypes.PLANE: {
+        switch (self.objects[i].type.id) {
+          case ObjectTypes.PLANE.id: {
             geometry = new THREE.PlaneBufferGeometry(1, 1, 32)
             material = new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color: 0xcc0000, transparent: true})
             if (self.isOrthographic) {
@@ -77,7 +77,7 @@ export default {
             }
             break
           }
-          case ObjectTypes.BOX: {
+          case ObjectTypes.BOX.id: {
             geometry = new THREE.BoxBufferGeometry(1, 1, 1, 32, 32, 32)
             material = new THREE.MeshBasicMaterial({color: 0xcc0000})
             if (self.isOrthographic) {
@@ -95,8 +95,44 @@ export default {
             }
             break
           }
-          case ObjectTypes.SPHERE: {
+          case ObjectTypes.SPHERE.id: {
             geometry = new THREE.SphereBufferGeometry(1)
+            material = new THREE.MeshBasicMaterial({color: 0xcc0000})
+            if (self.isOrthographic) {
+              wireframe = new THREE.EdgesGeometry(geometry)
+              line = new THREE.LineSegments(wireframe, material)
+              line.material.depthTest = false
+              line.material.opacity = 1
+              line.material.transparent = true
+              scene.add(line)
+              obj = line
+            } else {
+              mesh = new THREE.Mesh(geometry, phongMat)
+              scene.add(mesh)
+              obj = mesh
+            }
+            break
+          }
+          case ObjectTypes.CONE.id: {
+            geometry = new THREE.ConeBufferGeometry(0.5, 1, 32)
+            material = new THREE.MeshBasicMaterial({color: 0xcc0000})
+            if (self.isOrthographic) {
+              wireframe = new THREE.EdgesGeometry(geometry)
+              line = new THREE.LineSegments(wireframe, material)
+              line.material.depthTest = false
+              line.material.opacity = 1
+              line.material.transparent = true
+              scene.add(line)
+              obj = line
+            } else {
+              mesh = new THREE.Mesh(geometry, phongMat)
+              scene.add(mesh)
+              obj = mesh
+            }
+            break
+          }
+          case ObjectTypes.CYLINDER.id: {
+            geometry = new THREE.CylinderBufferGeometry(1 - self.objects[i].ratio, self.objects[i].ratio, 1, 32)
             material = new THREE.MeshBasicMaterial({color: 0xcc0000})
             if (self.isOrthographic) {
               wireframe = new THREE.EdgesGeometry(geometry)
@@ -123,7 +159,7 @@ export default {
           obj.rotation.y = self.objects[i].rotation.y * (Math.PI / 180)
           obj.rotation.z = self.objects[i].rotation.z * (Math.PI / 180)
           obj.scale.x = self.objects[i].scale.x
-          obj.scale.y = self.objects[i].scale.y
+          obj.scale.y = self.objects[i].scale.y * self.yFactor
           obj.scale.z = self.objects[i].scale.z
           obj.name = 'yo'
         }
@@ -139,8 +175,11 @@ export default {
         self.$data.meshes[i].rotation.y = self.objects[i].rotation.y * (Math.PI / 180)
         self.$data.meshes[i].rotation.z = self.objects[i].rotation.z * (Math.PI / 180)
         self.$data.meshes[i].scale.x = self.objects[i].scale.x
-        self.$data.meshes[i].scale.y = self.objects[i].scale.y
+        self.$data.meshes[i].scale.y = self.objects[i].scale.y * self.yFactor
         self.$data.meshes[i].scale.z = self.objects[i].scale.z
+        if (self.objects[i].ratio !== undefined) {
+          console.log(self.$data.meshes[i])
+        }
         // obj.name = 'yo'
       }
     }

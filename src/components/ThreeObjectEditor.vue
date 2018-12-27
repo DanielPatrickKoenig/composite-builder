@@ -42,6 +42,9 @@
     <tr>
       <td>Z</td><td><input type="number" v-model="object.scale.z" v-on:change="onInput" /></td>
     </tr>
+    <tr class="property-header" v-if="object.ratio != undefined">
+      <td>Ratio</td><td><input type="number" v-model="object.ratio" redraw="yes" v-on:change="onInput" /></td>
+    </tr>
   </table>
 </template>
 <script>
@@ -54,7 +57,8 @@ export default {
   },
   methods: {
     onInput: function (e) {
-      EventBus.$emit('editor-value-change', {})
+      var shouldRedraw = e.currentTarget.getAttribute('redraw') === 'yes'
+      EventBus.$emit('editor-value-change', shouldRedraw)
     },
     hasProperty: function (p) {
       return p !== null && p !== undefined
