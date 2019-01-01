@@ -1,10 +1,5 @@
 <template>
   <table>
-    <tr class="util-ui-row" v-if="index >= 0">
-      <td colspan="2">
-        <button v-on:click="deleteClicked" class="delete">X</button>
-      </td>
-    </tr>
     <tr class="property-header">
       <td colspan="2">
         Position
@@ -88,10 +83,6 @@ export default {
       var pointSplit = e.currentTarget.getAttribute('pointid').split(':')
       var pointParams = {o: Number(pointSplit[0]), p: Number(pointSplit[1]), prop: pointSplit[2], value: e.currentTarget.value}
       EventBus.$emit('editor-point-change', pointParams)
-    },
-    deleteClicked: function (e) {
-      var self = this
-      EventBus.$emit('editor-delete-item', self.index)
     },
     addPoint: function () {
       EventBus.$emit('editor-point-add', this.index)
