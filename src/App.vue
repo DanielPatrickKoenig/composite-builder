@@ -17,19 +17,19 @@
         <threerender class="z-view" v-if="shouldRender" :objects="objectManifest" :perspective='0' :axis="AxisTypes.Z" :signature="signature"></threerender>
       </div>
     </div>
-    <div class="editor-top-nav" v-on:click="tempData.active = true"><button>Add</button><button>Save</button></div>
+    <div class="editor-top-nav"><button v-on:click="tempData.active = true">Add</button><button v-on:click="saveClicked">Save</button></div>
     <div v-if="tempData.active" class="add-object-window">
       <div>
         <select v-model="tempData.objId" v-on:change="typeSelectorChange">
           <option :value="-1">Select an object type</option>
-          <option v-for="(o, k, i) in ObjectTypes" :key="i.toString()+'-'+k.toString()" :value=o.id>{{o.label}}</option>
-
+          <option v-for="(o, k, i) in ObjectTypes" :key="i.toString()+'-'+k.toString()" :value="o.id">{{o.label}}</option>
         </select>
         <div v-if="tempData.objId >= 0 && tempData.objData != {}">
-          <editor :object="tempData.objData"></editor>
-          <button v-on:click="addObject">Add {{tempData.objData.type.label}}</button>
-          <button v-on:click="cancelAdd">Cancel</button>
+          <editor :object="tempData.objData" :index="-1"></editor>
+          
         </div>
+        <button v-on:click="cancelAdd">Cancel</button>
+        <button v-if="tempData.objId >= 0 && tempData.objData != {}" v-on:click="addObject">Add {{tempData.objData.type.label}}</button>
       </div>
     </div>
     <layers :layers="objectManifest" :z="2000" class="object-listing">
@@ -37,7 +37,7 @@
         <label>
           {{o.type.label}}
         </label>
-        <editor :object="o"></editor>
+        <editor :object="o" :index="i"></editor>
       </div>
     </layers>
   </div>
@@ -139,6 +139,10 @@ export default {
     },
     getTypeLabel: function (t) {
       return t.label
+    },
+    saveClicked: function (e) {
+      var self = this
+      console.log(JSON.stringify(self.$data.objectManifest))
     }
   },
   mounted: function () {
@@ -207,6 +211,21 @@ export default {
         self.rerenderViewports()
       }
     })
+    EventBus.$on('editor-point-change', (n) => {
+      // console.log(n)
+      self.$data.objectManifest[n.o].points[n.p][n.prop] = Number(n.value)
+      self.rerenderViewports()
+    })
+    EventBus.$on('editor-point-add', (n) => {
+      // console.log(n)
+      self.$data.objectManifest[n].points.push({x: 0, y: 0, z: 0})
+      self.rerenderViewports()
+    })
+    EventBus.$on('editor-delete-item', (n) => {
+      console.log(n)
+      self.$data.objectManifest.splice(n, 1)
+      self.rerenderViewports()
+    })
   }
 }
 </script>
@@ -257,6 +276,9 @@ div.add-object-window{
     width: 300px;
     padding: 6px;
     margin:50px auto;
+    > select {
+      width:100%;
+    }
   }
 }
 #app {

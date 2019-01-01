@@ -1,5 +1,10 @@
 <template>
   <table>
+    <tr class="util-ui-row" v-if="index >= 0">
+      <td colspan="2">
+        <button v-on:click="deleteClicked" class="delete">X</button>
+      </td>
+    </tr>
     <tr class="property-header">
       <td colspan="2">
         Position
@@ -42,15 +47,33 @@
     <tr>
       <td>Z</td><td><input type="number" v-model="object.scale.z" v-on:change="onInput" /></td>
     </tr>
-    <tr class="property-header" v-if="object.ratio != undefined">
+    <tr class="property-header" v-if="object.ratio != undefined && object.ratio != null">
       <td>Ratio</td><td><input type="number" v-model="object.ratio" redraw="yes" v-on:change="onInput" /></td>
+    </tr>
+    <tr class="property-header" v-if="object.points != undefined && object.points != null && index >= 0">
+      <td colspan="2">Points</td>
+    </tr>
+    <tr v-for="(p, i) in object.points" :key="'point_'+i.toString()" v-if="object.points != undefined && object.points != null && index >= 0">
+      <td>Point {{i + 1}}</td>
+      <td>
+        <table>
+          <tr>
+            <td><input :pointid="index.toString()+':'+i.toString() + ':x'" type="number" :value="object.points[i].x" redraw="yes" v-on:change="onPointInput" /></td>
+            <td><input :pointid="index.toString()+':'+i.toString() + ':y'" type="number" :value="object.points[i].y" redraw="yes" v-on:change="onPointInput" /></td>
+            <td v-if="object.points[i].z != undefined && object.points[i].z != null"><input :pointid="index.toString()+':'+i.toString() + ':z'" type="number" :value="object.points[i].z" redraw="yes" v-on:change="onPointInput" /></td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr v-if="object.points != undefined && object.points != null && index >= 0">
+      <td colspan="2"><button v-on:click="addPoint">Add Point</button></td>
     </tr>
   </table>
 </template>
 <script>
 import {EventBus} from './EventBus.js'
 export default {
-  props: ['object'],
+  props: ['object', 'index'],
   data () {
     return {
     }
@@ -59,6 +82,19 @@ export default {
     onInput: function (e) {
       var shouldRedraw = e.currentTarget.getAttribute('redraw') === 'yes'
       EventBus.$emit('editor-value-change', shouldRedraw)
+    },
+    onPointInput: function (e) {
+      // var shouldRedraw = e.currentTarget.getAttribute('redraw') === 'yes'
+      var pointSplit = e.currentTarget.getAttribute('pointid').split(':')
+      var pointParams = {o: Number(pointSplit[0]), p: Number(pointSplit[1]), prop: pointSplit[2], value: e.currentTarget.value}
+      EventBus.$emit('editor-point-change', pointParams)
+    },
+    deleteClicked: function (e) {
+      var self = this
+      EventBus.$emit('editor-delete-item', self.index)
+    },
+    addPoint: function () {
+      EventBus.$emit('editor-point-add', this.index)
     },
     hasProperty: function (p) {
       return p !== null && p !== undefined
@@ -79,6 +115,14 @@ table{
       > input[type="number"]{
         width:100%;
       }
+    }
+  }
+  tr.util-ui-row{
+    td{
+      > button.delete{
+        float:right;
+      }
+
     }
   }
 }
