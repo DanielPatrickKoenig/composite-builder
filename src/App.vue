@@ -34,8 +34,8 @@
     </div>
     <layers :layers="objectManifest" :z="2000" class="object-listing">
       <div v-for="(o, i) in objectManifest" :key="'objectlayer'+i.toString" :slot="'slot'+i.toString()">
-        <label>
-          {{o.type.label}}
+        <label class="object-row-label">
+          {{o.type.label}}<button v-on:click="deleteClicked(i)" class="delete">X</button>
         </label>
         <editor :object="o" :index="i"></editor>
       </div>
@@ -143,6 +143,11 @@ export default {
     saveClicked: function (e) {
       var self = this
       console.log(JSON.stringify(self.$data.objectManifest))
+    },
+    deleteClicked: function (n) {
+      var self = this
+      self.$data.objectManifest.splice(n, 1)
+      self.rerenderViewports()
     }
   },
   mounted: function () {
@@ -221,11 +226,6 @@ export default {
       self.$data.objectManifest[n].points.push({x: 0, y: 0, z: 0})
       self.rerenderViewports()
     })
-    EventBus.$on('editor-delete-item', (n) => {
-      console.log(n)
-      self.$data.objectManifest.splice(n, 1)
-      self.rerenderViewports()
-    })
   }
 }
 </script>
@@ -279,6 +279,11 @@ div.add-object-window{
     > select {
       width:100%;
     }
+  }
+}
+label.object-row-label{
+  > button{
+    float:right;
   }
 }
 #app {
