@@ -1,7 +1,6 @@
 <template>
   <div class="view-shell">
     <div class="view-container" :id="containerID">
-
     </div>
     <wireframe :objects="objects" :axis="axis" :scale="axisData.scale"></wireframe>
   </div>
@@ -133,6 +132,68 @@ export default {
           }
           case ObjectTypes.CYLINDER.id: {
             geometry = new THREE.CylinderBufferGeometry(1 - self.objects[i].ratio, self.objects[i].ratio, 1, 32)
+            material = new THREE.MeshBasicMaterial({color: 0xcc0000})
+            if (self.isOrthographic) {
+              wireframe = new THREE.EdgesGeometry(geometry)
+              line = new THREE.LineSegments(wireframe, material)
+              line.material.depthTest = false
+              line.material.opacity = 1
+              line.material.transparent = true
+              scene.add(line)
+              obj = line
+            } else {
+              mesh = new THREE.Mesh(geometry, phongMat)
+              scene.add(mesh)
+              obj = mesh
+            }
+            break
+          }
+          case ObjectTypes.TORUS.id: {
+            geometry = new THREE.TorusBufferGeometry(1, self.objects[i].ratio, 16, 100)
+            material = new THREE.MeshBasicMaterial({color: 0xcc0000})
+            if (self.isOrthographic) {
+              wireframe = new THREE.EdgesGeometry(geometry)
+              line = new THREE.LineSegments(wireframe, material)
+              line.material.depthTest = false
+              line.material.opacity = 1
+              line.material.transparent = true
+              scene.add(line)
+              obj = line
+            } else {
+              mesh = new THREE.Mesh(geometry, phongMat)
+              scene.add(mesh)
+              obj = mesh
+            }
+            break
+          }
+          case ObjectTypes.TUBE.id: {
+            var points = []
+            for (var j = 0; j < self.objects[i].points.length; j++) {
+              points.push(new THREE.Vector3(self.objects[i].points[j].x, self.objects[i].points[j].y, self.objects[i].points[j].z))
+            }
+            geometry = new THREE.TubeGeometry(new THREE.SplineCurve3(points), 64, 1, 8, false)
+            material = new THREE.MeshBasicMaterial({color: 0xcc0000})
+            if (self.isOrthographic) {
+              wireframe = new THREE.EdgesGeometry(geometry)
+              line = new THREE.LineSegments(wireframe, material)
+              line.material.depthTest = false
+              line.material.opacity = 1
+              line.material.transparent = true
+              scene.add(line)
+              obj = line
+            } else {
+              mesh = new THREE.Mesh(geometry, phongMat)
+              scene.add(mesh)
+              obj = mesh
+            }
+            break
+          }
+          case ObjectTypes.LATHE.id: {
+            var lpoints = []
+            for (var k = 0; k < self.objects[i].points.length; k++) {
+              lpoints.push(new THREE.Vector3(self.objects[i].points[k].x, self.objects[i].points[k].y))
+            }
+            geometry = new THREE.LatheGeometry(lpoints, 64, 1, 8, false)
             material = new THREE.MeshBasicMaterial({color: 0xcc0000})
             if (self.isOrthographic) {
               wireframe = new THREE.EdgesGeometry(geometry)
